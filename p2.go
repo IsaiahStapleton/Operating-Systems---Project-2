@@ -7,10 +7,7 @@ import (
 	"os"
 )
 
-// type consumer_task struct {
-// 	task_num int
-// }
-
+// Consumer task to operate on queue
 func consumer_task(task_num int) {
 	fmt.Printf("I'm consumer task #%v", task_num)
 }
@@ -41,26 +38,15 @@ func main() {
 	// Initialize queue
 	queue := make([]string, 0)
 
-	// Index variable for scanning through lines
-	scan_index := 0
-
-	// Loop through each line in the file
+	// Loop through each line in the file and append it to the queue
 	for scanner.Scan() {
         line := scanner.Text()  
 		queue = append(queue, line)
-
-		scan_index += 1
-
     }
 
+	// Start specified # of consumer tasks
 	for i := 1; i <= numof_tasks; i++ {
 		go consumer_task(i)
 	}
-
-
-	fmt.Println(queue[0])
-	fmt.Println(queue[len(queue)-1])
-
-	
 
 }
