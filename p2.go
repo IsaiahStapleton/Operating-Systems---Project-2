@@ -9,62 +9,56 @@ import (
 )
 
 // Consumer task to operate on queue
-func consumer_task(task_num int) {
-	
-	fmt.Printf("I'm consumer task #%v ", task_num)
-	fmt.Println("Line being popped off queue: " + queue[0])
+func consumer_task(task_num int, ch <-chan string) {
 
-	queue = queue[1:]
-
-
+	fmt.Printf("I'm consumer task #%v\n", task_num)
+	for item := range ch {
+		fmt.Printf("task %d consuming: Line item: %v\n", task_num, item)
+	}
+	// each worker will drop out of their loop when channel is closed
 }
 
-// Initialize queue
-var queue = make([]string, 0)
-
-
 func main() {
-
-	// Initialize wait group 
+	// Initialize queue
+	queue := make(chan string)
+	// Initialize wait group
 	var wg sync.WaitGroup
-
-
 	// Get number of tasks to run from user
 	var numof_tasks int
 	fmt.Print("Enter number of tasks to run: ")
 	fmt.Scan(&numof_tasks)
 
-	
 	// Open file
 	file, err := os.Open("test.txt")
-    if err != nil {
-        log.Fatal(err)
-    }
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    defer file.Close()
+	defer file.Close()
 
 	// Scanner to scan the file
 	scanner := bufio.NewScanner(file)
 	if err := scanner.Err(); err != nil {
-        log.Fatal(err)
-    }
-
+		log.Fatal(err)
+	}
 
 	// Loop through each line in the file and append it to the queue
-	for scanner.Scan() {
-        line := scanner.Text()  
-		queue = append(queue, line)
-    }
+	go func() {
+		// Loop through each line in the file and append it to the queue
+		for scanner.Scan() {
+			queue <- scanner.Text()
+		}
+		close(queue) // signal to workers that there is no more items
+	}()
 
 	// Start specified # of consumer tasks
 	for i := 1; i <= numof_tasks; i++ {
 		wg.Add(1)
-		go func(i int) { 
-			consumer_task(i) 
+		go func(i int) {
+			consumer_task(i, queue) // add the queue parameter
 			wg.Done()
 		}(i)
 	}
-
 
 	wg.Wait()
 	fmt.Println("All done")
