@@ -34,9 +34,13 @@ func main() {
 	// Initialize wait group
 	var wg sync.WaitGroup
 	// Get number of tasks to run from user
-	var numof_tasks int
-	fmt.Print("Enter number of tasks to run: ")
-	fmt.Scan(&numof_tasks)
+	// var numof_tasks string
+	fmt.Printf("Enter number of tasks to run: ")
+	// stdin starting to get input from user
+	reader := bufio.NewReader(os.Stdin)
+	numof_tasks, _, err := reader.ReadRune()
+	// change rune value to int value
+	numof_tasksi := int(numof_tasks)
 
 	// Open file
 	file, err := os.Open("test.txt")
@@ -62,7 +66,7 @@ func main() {
 	}()
 
 	// Start specified # of consumer tasks
-	for i := 1; i <= numof_tasks; i++ {
+	for i := 1; i <= numof_tasksi; i++ {
 		wg.Add(1)
 		go func(i int) {
 			consumer_task(i, queue) 
