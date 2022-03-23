@@ -5,17 +5,27 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 )
+
+var total_num_word int
+
+func count_words(s string) int {
+	return len(strings.Fields(s))
+}
 
 // Consumer task to operate on queue
 func consumer_task(task_num int, ch <-chan string) {
 
-	fmt.Printf("I'm consumer task #%v\n", task_num)
+	
 	for item := range ch {
-		fmt.Printf("task %d consuming: Line item: %v\n", task_num, item)
+		fmt.Printf("Task %d consuming line: %v\n", task_num, item)
+		word_count := count_words(item)
+		fmt.Printf("	Number of words in line: %d\n", word_count)
+		total_num_word += word_count
 	}
-	// each worker will drop out of their loop when channel is closed
+	// each thread will drop out of their loop when channel is closed
 }
 
 func main() {
@@ -55,12 +65,13 @@ func main() {
 	for i := 1; i <= numof_tasks; i++ {
 		wg.Add(1)
 		go func(i int) {
-			consumer_task(i, queue) // add the queue parameter
+			consumer_task(i, queue) 
 			wg.Done()
 		}(i)
 	}
 
 	wg.Wait()
 	fmt.Println("All done")
-	fmt.Println(queue)
+	fmt.Println(total_num_word)
+
 }
