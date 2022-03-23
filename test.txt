@@ -1,6 +1,0 @@
-this is a text file
-for project 2 
-the purpose of this project
-is to build understand
-of threading 
-and process synchronization
