@@ -21,7 +21,7 @@ func consumer_task(task_num int, ch <-chan string, ch2 chan<- int) {
 	// in order to communicate with other threads
 	for item := range ch {
 		word_count := count_words(item) 
-		fmt.Printf("\nTask %d consuming line: %v\nNumber of words: %d", task_num, item, word_count)
+		fmt.Printf("\nTask %d consuming line: %v\nNumber of words in line: %d", task_num, item, word_count)
 		ch2 <- word_count
 	}
 
@@ -29,16 +29,18 @@ func consumer_task(task_num int, ch <-chan string, ch2 chan<- int) {
 
 func main() {
 
-	// Initialize queue
+	// Initialize channels
 	queue := make(chan string)
 	word_counts := make(chan int)
+
+	// Variable for keeping track of the total number of words
 	total_words := 0
 
 	// Initialize wait group
 	var wg sync.WaitGroup
 
 	// Get num of tasks to run as well as name of the file from user
-	fmt.Printf("Enter number of tasks to run followed by name of text file (ex. 5 text.txt): ")
+	fmt.Printf("Enter number of consumer tasks to run followed by name of text file (ex. 5 text.txt): ")
 	var numof_tasks int = 0
 	var file_name string
 	fmt.Scanf("%d %s", &numof_tasks, &file_name)
